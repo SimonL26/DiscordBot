@@ -13,4 +13,4 @@ def handle_response(message:str) -> str:
     if p_message == "!help":
         return "`This is some help message`"
 
-    return "Confused"
+    return "Confused..."
