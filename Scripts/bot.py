@@ -1,18 +1,17 @@
 import discord
 from discord.ext import commands
-import responses
 import random 
 
 # async method to send message
-async def send_message(message, user_message, is_private:bool):
-    try:
-        response = responses.handle_response(user_message)
-        if is_private:
-            await message.author.send(response)
-        else:
-            await message.channel.send(response)
-    except Exception as e:
-        print(e)
+# async def send_message(message, user_message, is_private:bool):
+#     try:
+#         response = responses.handle_response(user_message)
+#         if is_private:
+#             await message.author.send(response)
+#         else:
+#             await message.channel.send(response)
+#     except Exception as e:
+#         print(e)  
 
 def run_discord_bot():
     TOKEN = "MTA1NDQ4MTg5MzA0NDc4NTE2Mg.GzRjtC.-F72HmFY81wTT93dOS1VsJypotqxyHOF_jZALs"
