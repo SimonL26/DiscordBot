@@ -8,11 +8,15 @@ class BasicCommands(commands.Cog):
         self.__last_member = None
 
     @commands.Cog.listener()
+    async def on_ready(self):
+        print("Bot is online!")
+
+    @commands.Cog.listener()
     async def on_member_join(self, member):
         channel = member.guild.system_channel
         if channel is None:
             await channel.send(f'Welcome {member.mention}.')
-
+    
     @commands.command()
     async def greet(self, ctx, *, member:discord.Member = None):
         """Greets a member from the channel"""
@@ -34,5 +38,6 @@ class BasicCommands(commands.Cog):
         """Choose one thing from the list provided by the channel member"""
         await ctx.send(random.choice(choices))
 
-    
+async def setup(bot):
+    await bot.add_cog(BasicCommands(bot))
 

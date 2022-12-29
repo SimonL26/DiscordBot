@@ -25,8 +25,9 @@ class QuickMath(commands.Cog):
     async def divide(self, ctx, a:float, b:float):
         """Divide b from a, rounds up to two decimal numbers"""
         if b == 0:
-            await ctx.send(f"Oops... I cannot divide {b}")
+            await ctx.send(f"Oops... I cannot divide 0")
         result = round(a/b, 2)
         await ctx.send(result)
 
-    
+async def setup(bot):
+    await bot.add_cog(QuickMath(bot))
