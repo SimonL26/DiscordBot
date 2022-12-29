@@ -28,3 +28,11 @@ class BasicCommands(commands.Cog):
         """Returns a random number in the range of (a, b)"""
         await ctx.send(str(random.randint(a, b)))
 
+
+    @commands.command()
+    async def choose(self, ctx, *choices: str):
+        """Choose one thing from the list provided by the channel member"""
+        await ctx.send(random.choice(choices))
+
+    
+
