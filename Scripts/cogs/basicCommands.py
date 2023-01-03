@@ -10,13 +10,37 @@ class BasicCommands(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print("Bot is online!")
+        print("-----------------")
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        channel = member.guild.system_channel
-        if channel is None:
-            await channel.send(f'Welcome {member.mention}.')
+        #guild is a server in discord
+        #Get channel id such that bot sends message inside the channel
+        """Welcomes new members to the server"""
+        print(f"{member.name} joined")
+        guild = self.bot.get_guild(1059465289743470643)
+        channel = discord.utils.get(member.guild.channels, id=1059465290255192146)
+
+        if guild:
+            print("Discord server exist")
+        else:
+            print("Discord server not found!")
+        
+        if channel is not None:
+            await channel.send(f"Welcome {member.mention}")
+        else:
+            print("Channel not found in the server!")
     
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        """Says goodbye to left members"""
+        print(f"{member.name} left")
+        channel = discord.utils.get(member.guild.channels, id=1059465290255192146)
+        if channel is not None:
+            await channel.send(f"Goodbye {member.name}, we will remember you forever")
+        else:
+            print("Channel not found.")
+
     @commands.command()
     async def greet(self, ctx, *, member:discord.Member = None):
         """Greets a member from the channel"""
@@ -31,7 +55,6 @@ class BasicCommands(commands.Cog):
     async def roll(self, ctx, a:int, b:int):
         """Returns a random number in the range of (a, b)"""
         await ctx.send(str(random.randint(a, b)))
-
 
     @commands.command()
     async def choose(self, ctx, *choices: str):
