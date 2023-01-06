@@ -2,10 +2,13 @@ import discord
 from discord.ext import commands
 import os
 import asyncio
+import json
 
 # inviteLink = https://discord.com/api/oauth2/authorize?client_id=1054481893044785162&permissions=3298065120321&scope=bot
 
-TOKEN = "MTA1NDQ4MTg5MzA0NDc4NTE2Mg.GzRjtC.-F72HmFY81wTT93dOS1VsJypotqxyHOF_jZALs"
+token_file = open("token.json")
+token = json.load(token_file)
+
 description ="""A personal bot that is currently under development."""
 
 intents = discord.Intents.default()
@@ -24,7 +27,7 @@ async def load():
 
 async def main():
     await load()
-    await bot.start(token=TOKEN)
+    await bot.start(token=token['token'])
 
 asyncio.run(main())
 # bot.run(TOKEN)

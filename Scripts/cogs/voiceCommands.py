@@ -15,7 +15,7 @@ class VoiceCommands(commands.Cog):
         
     @commands.command(pass_context = True)
     async def leave(self, ctx):
-        if (ctx.voice_client):
+        if ctx.voice_client:
             await ctx.guild.voice_client.disconnect()
             await ctx.send("I left the voice channel")
         else:
