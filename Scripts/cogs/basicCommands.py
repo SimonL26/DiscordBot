@@ -22,8 +22,7 @@ class BasicCommands(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print("Bot is online!")
-        print("-----------------")
+        print("Basic Commands Cog has been added")
 
     @commands.Cog.listener()
     async def on_member_join(self, member):

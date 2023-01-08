@@ -5,6 +5,10 @@ class VoiceCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print("Voice Commands Cog has been added")
+
     @commands.command(pass_context = True)
     async def join(self, ctx):
         if(ctx.author.voice):

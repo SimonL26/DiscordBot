@@ -5,6 +5,10 @@ class QuickMath(commands.Cog):
     def __init__(self, bot):
         self.bot = bot 
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print("Quick Math Cog has been added")
+
     @commands.command()
     async def add(self, ctx, a:float, b:float):
         """Adds two numbers together"""
