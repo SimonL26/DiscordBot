@@ -32,5 +32,6 @@ async def main():
     await bot.start(token=token['token'])
 
 asyncio.run(main())
-# bot.run(TOKEN)
+
+# bot.run(token['token'])
 

@@ -6,15 +6,13 @@ import json
 import typing
 
 # adding spotify client ID
-file = open("spotify.json")
+file = open("cogs/spotify.json")
 jsonfile = json.load(file)
 SECRET = jsonfile['spotify_secret']
 
 class MusicCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
-        bot.loop.create_task(self.connect_nodes())
 
     async def connect_nodes(self):
         """Connect to Lavalink nodes"""
@@ -32,6 +30,7 @@ class MusicCommands(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print("Music Commands Cog has been added")
+        self.bot.loop.create_task(self.connect_nodes())
 
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node: wavelink.Node):
@@ -61,6 +60,11 @@ class MusicCommands(commands.Cog):
         if player is None:
             return await ctx.send("Bot is not connected to any voice channel")
         
+        if player.is_playing():
+            await player.stop()
+            await player.disconnect()
+            return await ctx.send(f"Disconnected from {ctx.author.voice.channel.name}")
+
         await player.disconnect()
         return await ctx.send(f"Disconnected from {ctx.author.voice.channel.name}")
 
@@ -79,7 +83,7 @@ class MusicCommands(commands.Cog):
         msg = discord.Embed(title=f"Playing {query_url}")
         return await ctx.send(embed=msg)
 
-    @commands.command(name="pause", aliases=['p'], description="Pause current playing music")
+    @commands.command(name="pause", description="Pause current playing music")
     async def pause(self, ctx: commands.Context):
         node = wavelink.NodePool.get_node()
         player = node.get_player(ctx.guild)
@@ -87,8 +91,8 @@ class MusicCommands(commands.Cog):
         if player is None:
             return await ctx.send("Bot is not connected to any voice channel")
         
-        if not player.is_paused:
-            if player.is_playing:
+        if not player.is_paused():
+            if player.is_playing():
                 await player.pause()
                 return await ctx.send("Playback paused")
             else:
@@ -104,7 +108,7 @@ class MusicCommands(commands.Cog):
         if player is None:
             return await ctx.send("Bot is not connected to any voice channel")
 
-        if player.is_playing:
+        if player.is_playing():
             await player.stop()
             return await ctx.send("Playback stopped")
         else:
@@ -136,6 +140,16 @@ class MusicCommands(commands.Cog):
 
         await player.set_volume(vol)
         return ctx.send(f"Volume set to {vol}%")
+    
+    @commands.command(name="status", description="get player status")
+    async def status(self, ctx: commands.Context):
+        node = wavelink.NodePool.get_node()
+        player = node.get_player(ctx.guild)
+
+        if player.is_playing():
+            return await ctx.send("Player is currently playing")
+        elif player.is_paused():
+            return await ctx.send("Player is currently paused")
 
 
 async def setup(bot):
