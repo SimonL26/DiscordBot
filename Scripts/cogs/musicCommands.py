@@ -15,9 +15,6 @@ class MusicCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.songqueue = []
-        self.position = 0
-        self.repeat = False
-        self.repeatMode = "None"
         self.playingTextChannel = 0
 
     async def connect_nodes(self):
@@ -81,6 +78,7 @@ class MusicCommands(commands.Cog):
                 return await ctx.send("Bot is connected to a voice channel")
             
         await channel.connect(cls=wavelink.Player)
+        self.playingTextChannel = ctx.author.voice.channel.id
         return await ctx.send(f"Connected to {channel.name}")
 
     @commands.command(name="leave", aliases=['disconnect', 'dc'], description="Leave the voice channel")
@@ -94,9 +92,11 @@ class MusicCommands(commands.Cog):
         if player.is_playing():
             await player.stop()
             await player.disconnect()
+            self.playingTextChannel = 0
             return await ctx.send(f"Disconnected from {ctx.author.voice.channel.name}")
 
         await player.disconnect()
+        self.playingTextChannel = 0
         return await ctx.send(f"Disconnected from {ctx.author.voice.channel.name}")
 
     @commands.command(name="play", aliases=["p"], description='Play music from a url')
@@ -112,6 +112,7 @@ class MusicCommands(commands.Cog):
 
         if not ctx.voice_client:
             vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
+            self.playingTextChannel = ctx.author.voice.channel.id
         else:
             vc: wavelink.Player = ctx.voice_client
 
@@ -190,16 +191,6 @@ class MusicCommands(commands.Cog):
 
         await player.set_volume(vol)
         return ctx.send(f"Volume set to {vol}%")
-    
-    @commands.command(name="status", description="get player status")
-    async def status(self, ctx: commands.Context):
-        node = wavelink.NodePool.get_node()
-        player = node.get_player(ctx.guild)
-
-        if player.is_playing():
-            return await ctx.send("Player is currently playing")
-        elif player.is_paused():
-            return await ctx.send("Player is currently paused")
 
     @commands.command(name="playonly", description="Play a track without adding it to the song queue")
     async def playonly(self, ctx: commands.Context, *, search: str):
@@ -213,6 +204,7 @@ class MusicCommands(commands.Cog):
 
         if not ctx.voice_client:
             vc: wavelink.Player = await ctx.author.voice.channel(cls=wavelink.Player)
+            self.playingTextChannel = ctx.author.voice.channel.id
             await player.connect(ctx.author.voice.channel)
         else:
             vc:wavelink.Player = ctx.voice_client
@@ -259,7 +251,7 @@ class MusicCommands(commands.Cog):
             return await ctx.reply("I found nothing 😢")
         
         embed = discord.Embed(
-            title="I found these tracks, select one!"
+            title="I found these tracks, select one!",
             description=("\n".join(f"**{i+1}. {t.title}**" for i, t in enumerate(tracks[:5])))
         )
 
@@ -299,6 +291,7 @@ class MusicCommands(commands.Cog):
             return
 
         vc: wavelink.Player = ctx.voice_client or ctx.author.voice.channel.connect(cls=wavelink.Player)
+        self.playingTextChannel = ctx.author.voice.channel.id
 
         if not player.is_playing() and not player.is_paused():
             try:
@@ -310,6 +303,21 @@ class MusicCommands(commands.Cog):
 
         await ctx.reply(f"Added {chosen_track.title} to the queue")
 
+    @commands.command(name="skip")
+    async def skip(self, ctx: commands.Context):
+        node = wavelink.NodePool.get_node()
+        player = node.get_player(ctx.guild)
+
+        if not len(self.songqueue) == 0:
+            next_track: wavelink.Track  = self.songqueue[0]
+            try:
+                await player.play(next_track)
+            except:
+                return await ctx.reply("Something went wrong while trying to play this track")
+            
+            await ctx.reply(f"Now playing: {next_track.title}")
+        else:
+            await ctx.reply("Track list is empty!")
 
 async def setup(bot):
     await bot.add_cog(MusicCommands(bot))
