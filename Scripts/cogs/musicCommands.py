@@ -63,8 +63,8 @@ class MusicCommands(commands.Cog):
             else:
                 pass
         else:
-            print(reason )
-    
+            print(reason)
+
     @commands.command(name="join", aliases=['connect', 'c'], description="Join in a voice channel")
     async def join(self, ctx: commands.Context, channel:typing.Optional[discord.VoiceChannel]):
         if channel is None:
@@ -106,9 +106,6 @@ class MusicCommands(commands.Cog):
             track = await wavelink.YouTubeTrack.search(query=query_url, return_first=True)
         except:
             return await ctx.reply("Something went wrong while searching for this track")
-
-        node = wavelink.NodePool.get_node()
-        player = node.get_player(ctx.guild)
 
         if not ctx.voice_client:
             vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
@@ -269,31 +266,30 @@ class MusicCommands(commands.Cog):
 
         for emoji in list(emojis[:min(len(tracks), len(emojis))]):
             await message.add_reaction(emoji)
-        
-        def check(res, user):
-            return(res.emoji in emojis and user == ctx.author and res.message.id == message.id)
-        
+    
         try:
-            reaction, _ = await self.bot.waif_for("reaction_add", timeout = 60.0, check=check)
+            reaction, user = await self.bot.wait_for("reaction_add", 
+                                                    timeout = 60.0, 
+                                                    check=lambda r, u: r.emoji in emojis and u.id == ctx.author.id and r.message.id == message.id)
+            await message.remove_reaction(reaction.emoji, user)
         except asyncio.TimeoutError:
-            await message.delete()
-            return 
-        else:
+            return await message.delete()
+        else:   
             await message.delete()
 
-        node = wavelink.NodePool.get_node()
-        player = node.get_player(ctx.guild)
-    
         try:
             if emoji_dict[reaction.emoji] == -1: return
             chosen_track = tracks[emoji_dict[reaction.emoji]]
         except:
             return
 
-        vc: wavelink.Player = ctx.voice_client or ctx.author.voice.channel.connect(cls=wavelink.Player)
-        self.playingTextChannel = ctx.author.voice.channel.id
+        if not ctx.voice_client:
+            vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
+            self.playingTextChannel = ctx.author.voice.channel.id
+        else:
+            vc: wavelink.Player = ctx.voice_client
 
-        if not player.is_playing() and not player.is_paused():
+        if not vc.is_playing():
             try:
                 await vc.play(chosen_track)
             except:
