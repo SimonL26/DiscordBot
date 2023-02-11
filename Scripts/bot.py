@@ -20,7 +20,7 @@ bot = commands.Bot(command_prefix="!", intents=intents, description=description)
 async def on_ready():
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print("Bot is online")
-    print("---------------------------")
+    print("-" * 50)
 
 async def load():
     for filename in os.listdir('./cogs'):
@@ -32,6 +32,3 @@ async def main():
     await bot.start(token=token['token'])
 
 asyncio.run(main())
-
-# bot.run(token['token'])
-

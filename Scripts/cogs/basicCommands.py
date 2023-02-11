@@ -83,6 +83,6 @@ class BasicCommands(commands.Cog):
         """Choose one thing from the list provided by the channel member"""
         await ctx.send(random.choice(choices))
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(BasicCommands(bot))
 

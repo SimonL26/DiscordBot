@@ -124,6 +124,72 @@ class MusicCommands(commands.Cog):
         msg = discord.Embed(title=f"Added {track} to the queue")
         return await ctx.send(embed=msg)
 
+    @commands.command(name="playspotify", aliases=['spotify', 'psp'], description="Play tracks using wavelink spotify extension")
+    async def playspotify(self, ctx:commands.Context, *, query_url: str):
+        try:
+            decoded = spotify.decode_url(query_url)
+        except:
+            return await ctx.reply("Something is wrong with the provided spotify link")
+
+        if decoded is None:
+            return await ctx.reply("Could not find anything with the given spotify URL")
+        
+        if decoded['type'] is spotify.SpotifySearchType.track:
+            try:
+                track = await spotify.SpotifyTrack.search(query=decoded['id'], type=decoded['type'], return_first=True)
+            except Exception as e:
+                print(e)
+                return await ctx.reply("Something is wrong while searching for this track")
+            
+            if not ctx.voice_client:
+                vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
+                self.playingTextChannel = ctx.author.voice.channel.id
+            else:
+                vc: wavelink.Player = ctx.voice_client
+            
+            if not vc.is_playing():
+                try:
+                    await vc.play(track)
+                except Exception as e:
+                    print(e.args)
+                    return await ctx.reply("Something went wrong while playing the track")
+            else:
+                self.songqueue.append(track)
+            
+            embed = discord.Embed(title=f"Added {track.title} to the queue")
+            return await ctx.reply(embed=embed)
+        else:
+            try:
+                tracks = spotify.SpotifyTrack.iterator(query=decoded['id'], type=decoded['type'])
+            except:
+                return await ctx.reply("Something went wrong while searching for the track")
+            
+            if not ctx.voice_client:
+                vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
+                self.playingTextChannel = ctx.author.voice.channel.id
+            else:
+                vc: wavelink.Player = ctx.voice_client
+            
+            loop = 1
+            async for track in tracks:
+                if not vc.is_playing():
+                    if loop == 1:
+                        try:
+                            await vc.play(track)
+                            loop += 1
+                        except Exception as e:
+                            print(e)
+                            return await ctx.reply("Something went wrong while playing the track")
+                    else:
+                        self.songqueue.append(track)
+                        loop += 1
+                else:
+                    self.songqueue.append(track)
+                    loop += 1
+            
+            embed = discord.Embed(title="Added all songs in the queue")
+            return await ctx.reply(embed=embed)
+
     @commands.command(name="pause", description="Pause current playing music")
     async def pause(self, ctx: commands.Context):
         node = wavelink.NodePool.get_node()
@@ -315,5 +381,10 @@ class MusicCommands(commands.Cog):
         else:
             await ctx.reply("Track list is empty!")
 
-async def setup(bot):
+    @commands.command(name="show")
+    async def show(self, ctx: commands.Context):
+        print(self.songqueue)
+        return await ctx.reply("Check terminal!")
+
+async def setup(bot:commands.Bot):
     await bot.add_cog(MusicCommands(bot))
