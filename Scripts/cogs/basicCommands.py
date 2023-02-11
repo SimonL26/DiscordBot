@@ -22,8 +22,7 @@ class BasicCommands(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print("Bot is online!")
-        print("-----------------")
+        print("Basic Commands Cog has been added")
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -84,6 +83,6 @@ class BasicCommands(commands.Cog):
         """Choose one thing from the list provided by the channel member"""
         await ctx.send(random.choice(choices))
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(BasicCommands(bot))
 

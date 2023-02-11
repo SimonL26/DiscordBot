@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 
 Scripts/token.json
+Scripts/Lavalink.jar
+Scripts/jdk16
+Scripts/cogs/spotify.json
